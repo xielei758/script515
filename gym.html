@@ -1,0 +1,156 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style type = "text/css">
+        body{ text-align:center}
+        #divcss5{margin:0 auto;border:1px solid #000;width:300px;height:100px;font-size: 50px;}
+    </style>
+</head>
+<body>
+<div class="divcss5">
+    <p style="font-size: 50;font-weight:bold">健身房预约url生成网页</h1>
+    <p id="demo" style="font-size: 50;">选择一个时段</p>
+    <select id="day" onclick="changeXingqi()" onchange="changeXingqi()" style="font-size: 50;">
+        <option>明天</option>
+        <option>今天</option>
+    </select>
+    <select id="timeselect" style="font-size: 50;"></select>
+    <p></p>
+    <button type="button" id="bbb" style="font-size: 90;font-weight:bold" onclick="myFunction()">开抢！</button>
+    <p id="demo" style="font-size: 50;">注意！使用前需正常登录一次体育馆预约系统再返回此页面</p>
+    <p id="buttonpush" style="font-size: 50; color: red;visibility: hidden">已开始进行预约，到12点会自动跳转</p>
+    <button type="button" style="font-size: 50;font-weight:bold" onclick="goGymList()">查看现有健身房空位</button>
+</div>
+
+
+
+</body>
+
+<script>
+    var time_number_map = new Map([['01', '08:00 - 09:20'],
+        ['02', '10:00 - 11:20'],
+        ['03', '12:00 - 13:20'],
+        ['04', '14:00 - 15:20'],
+        ['05', '16:00 - 17:20'],
+        ['06', '18:00 - 19:20'],
+        ['07', '20:00 - 21:20'],
+        ['08', '17:00 - 18:20'],
+        ['09', '19:00 - 20:20'],
+        ['10', '21:00 - 22:20'],
+        ['11', '08:00 - 09:00'],
+        ['12', '09:00 - 10:00'],
+        ['13', '10:00 - 11:00'],
+        ['14', '11:00 - 12:00'],
+        ['15', '12:00 - 13:00'],
+        ['16', '13:00 - 14:00'],
+        ['17', '14:00 - 15:00'],
+        ['18', '15:00 - 16:00'],
+        ['19', '16:00 - 17:00'],
+        ['20', '17:00 - 18:00'],
+        ['21', '18:00 - 19:00'],
+        ['22', '19:00 - 20:00'],
+        ['23', '20:00 - 21:00'],
+        ['24', '21:00 - 22:00']]);
+    var C_list=[['11','12','13','15','16','17','18','20','21','22','23','24'],
+        ['01','20','21','22','23','24'],
+        ['01','20','21','22','23','24'],
+        ['11','12','13','15','16','17','18','20','21','22','23','24'],
+        ['11','12','13','14','20','21','22','23','24'],
+        ['01','20','21','22','23','24'],
+        ['11','12','13','14','22','23','24']];
+    var xingqi = (new Date().getDay()+1)%7
+
+    function goGymList(){
+        window.location = "https://reservation.bupt.edu.cn/index.php/Wechat/Booking/choose_template/template/2/area_id/5985/"
+    }
+
+    function changeXingqi(){
+        var day = document.getElementById("day");
+        xingqi = (new Date().getDay()+1)%7
+        console.log(xingqi)
+        console.log(day.selectedIndex)
+        if (day.selectedIndex==0)
+        {
+            changeOption()
+        }else{
+            xingqi = (xingqi - 1)%7
+            changeOption()
+        }
+
+    }
+
+    function changeOption()
+    {
+        var timeselect = document.getElementById("timeselect");
+        timeselect.length = 0;
+        for (const key of C_list[xingqi]) {
+            var opt = new Option(time_number_map.get(key),key);
+            timeselect.options.add(opt);
+        }
+    }
+
+    function myFunction()
+    {
+        var item = 3 //0：羽毛球 1：乒乓球 2：游泳馆 3：健身房
+        var hour = 12, minute = 00 //开抢时间点(当本地时间大于该时间点时自动启动核心函数)
+        var timeIndex = [1] //预约时间段序号列表（按时间顺序排时间段，列表内数字代表相应序号时间段）  例如：某一天有三个时间段："08:00-09:20","10:00-11:20","12:00-13:20",[2,3]代表抢10点与12点的
+        //该时间段内位置列表（乒乓球和羽毛球同一时间段内有多个位置，默认为1，选第一个）游泳馆和健身房同一时间段内就一个，就是1  timeIndex与posIndex长度一致
+        var autoPay = 0 //是否自动用余额支付，0代表不自动，1代表自动（注意，如若不自动，尽量快点支付，因为只有支付完成后才算预约上，否则可能会出现在支付过程中位置已被别人抢完）
+        //var flag = 1 //1代表默认抢明天的，否则抢date所表示的，flag为1则date属性无效
+        var date = "20201019" //所要预约的日期 一共8位，例如:20200506
+
+        //e.g.羽毛球一天有三个时间段 "08:00-09:20","10:00-11:20","12:00-13:20"，每个时间段有5个位置，我想在2点8分开始抢明天10:00-11:20的一号位置，12:00-13:20的四号五号位置，自动支付，设置如下：
+        //item=0;hour=2;minute=8;timeIndex=[2,3];posIndex=[[1],[4,5]];autoPay=1;flag=1;
+        //e.g.游泳馆一天有一个时间段 "18:00-20:00"，每个时间段有1个位置，我想在10点开始抢明天位置，不自动支付，设置如下：
+        //item=2;hour=10;minute=0;timeIndex=[1];posIndex=[[1]];autoPay=1;flag=1;
+
+        // code
+
+        var myselect=document.getElementById("timeselect");
+        var buttonpush = document.getElementById("buttonpush")
+        buttonpush.style.visibility = ''
+        document.getElementById("bbb").disabled=true;
+
+        var posIndex=myselect.selectedIndex; // selectedIndex代表的是你所选中项的index
+
+        var area_id,query_date,reserve_td_ids;
+        var url = window.location.href
+        var updateTime = 50
+
+        //area_id
+        var area_list=['5982','5983','5984','5985']
+        area_id=area_list[item]
+
+        //query_date
+        var dateTime = new Date()
+        var tomorrow = new Date(dateTime.setDate(dateTime.getDate()+1));
+        var year = String(tomorrow.getFullYear())
+        var month = String(tomorrow.getMonth()+1); if(month.length==1){ month='0'+month }
+        var day = String(tomorrow.getDate());
+        if(document.getElementById("day").selectedIndex == 1)
+            day -= 1
+        if(day.length==1){ day='0'+day }
+        query_date=year+month+day
+
+        //reserve_td_ids
+        var reserve_td_id_list = []
+        var A_list='15415'
+
+        reserve_td_ids = A_list + '_' + query_date + C_list[xingqi][posIndex]
+
+        console.log(area_id+','+query_date+','+reserve_td_ids)
+
+
+        var zpInterval = setInterval(()=>{
+            var d = new Date()
+            if(Number(d.getHours())>hour || (Number(d.getHours())>=hour && Number(d.getMinutes())>=minute)){
+                clearInterval(zpInterval)
+                document.getElementById("bbb").disabled=false;
+                console.log("hello")
+                window.location = 'https://reservation.bupt.edu.cn/index.php/Wechat/Booking/confirm_booking?area_id=' + area_id + '&td_id=' + reserve_td_ids + '&query_date=' + query_date + "&country_id=0";
+            }
+        },10)
+    }
+    window.onload = changeOption()
+</script>
+</html>
